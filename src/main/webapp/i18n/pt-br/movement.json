@@ -1,0 +1,27 @@
+{
+  "coachappApp": {
+    "movement": {
+      "home": {
+        "title": "Movements",
+        "createLabel": "Criar novo Movement",
+        "createOrEditLabel": "Criar ou editar Movement",
+        "search": "Pesquisar por Movement"
+      },
+      "created": "Um novo Movement foi criado com o identificador {{ param }}",
+      "updated": "Um Movement foi atualizado com o identificador {{ param }}",
+      "deleted": "Um Movement foi deletado com o identificador {{ param }}",
+      "delete": {
+        "question": "Tem certeza de que deseja excluir Movement {{ id }}?"
+      },
+      "detail": {
+        "title": "Movement"
+      },
+      "name": "Name",
+      "abreviation": "Abreviation",
+      "description": "Description",
+      "url": "Url",
+      "movementCategory": "Movement Category",
+      "movementSet": "Movement Set"
+    }
+  }
+}

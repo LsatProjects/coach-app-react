@@ -1,0 +1,24 @@
+{
+  "coachappApp": {
+    "training": {
+      "home": {
+        "title": "Trainings",
+        "createLabel": "Criar novo Training",
+        "createOrEditLabel": "Criar ou editar Training",
+        "search": "Pesquisar por Training"
+      },
+      "created": "Um novo Training foi criado com o identificador {{ param }}",
+      "updated": "Um Training foi atualizado com o identificador {{ param }}",
+      "deleted": "Um Training foi deletado com o identificador {{ param }}",
+      "delete": {
+        "question": "Tem certeza de que deseja excluir Training {{ id }}?"
+      },
+      "detail": {
+        "title": "Training"
+      },
+      "name": "Name",
+      "description": "Description",
+      "phases": "Phases"
+    }
+  }
+}

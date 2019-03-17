@@ -1,0 +1,11 @@
+{
+  "coachappApp": {
+    "Level": {
+      "null": "",
+      "RX": "RX",
+      "SCALE": "SCALE",
+      "BEGINNER": "BEGINNER",
+      "INTERMEDIATE": "INTERMEDIATE"
+    }
+  }
+}

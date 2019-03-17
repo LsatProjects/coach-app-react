@@ -41,6 +41,15 @@ public class CacheConfiguration {
             cm.createCache(br.com.lsat.coachapp.domain.User.class.getName(), jcacheConfiguration);
             cm.createCache(br.com.lsat.coachapp.domain.Authority.class.getName(), jcacheConfiguration);
             cm.createCache(br.com.lsat.coachapp.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Sport.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.MovementCategory.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Movement.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Phase.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Phase.class.getName() + ".movementSets", jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.MovementSet.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.MovementSet.class.getName() + ".movements", jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Training.class.getName(), jcacheConfiguration);
+            cm.createCache(br.com.lsat.coachapp.domain.Training.class.getName() + ".phases", jcacheConfiguration);
             // jhipster-needle-ehcache-add-entry
         };
     }

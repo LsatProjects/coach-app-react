@@ -1,0 +1,25 @@
+{
+  "coachappApp": {
+    "phase": {
+      "home": {
+        "title": "Phases",
+        "createLabel": "Criar novo Phase",
+        "createOrEditLabel": "Criar ou editar Phase",
+        "search": "Pesquisar por Phase"
+      },
+      "created": "Um novo Phase foi criado com o identificador {{ param }}",
+      "updated": "Um Phase foi atualizado com o identificador {{ param }}",
+      "deleted": "Um Phase foi deletado com o identificador {{ param }}",
+      "delete": {
+        "question": "Tem certeza de que deseja excluir Phase {{ id }}?"
+      },
+      "detail": {
+        "title": "Phase"
+      },
+      "name": "Name",
+      "description": "Description",
+      "movementSets": "Movement Sets",
+      "training": "Training"
+    }
+  }
+}

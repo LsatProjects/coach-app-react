@@ -1,0 +1,46 @@
+{
+    "name": "MovementSet",
+    "fields": [
+        {
+            "fieldName": "unit",
+            "fieldType": "Unit",
+            "fieldValues": "REP,CAL,METER"
+        },
+        {
+            "fieldName": "round",
+            "fieldType": "Integer"
+        },
+        {
+            "fieldName": "weight",
+            "fieldType": "Float"
+        },
+        {
+            "fieldName": "level",
+            "fieldType": "Level",
+            "fieldValues": "RX,SCALE,BEGINNER,INTERMEDIATE"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipName": "phase",
+            "otherEntityName": "phase",
+            "relationshipType": "many-to-one",
+            "otherEntityField": "id"
+        },
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "movements",
+            "otherEntityName": "movement",
+            "otherEntityRelationshipName": "movementSet"
+        }
+    ],
+    "changelogDate": "20190317140636",
+    "entityTableName": "movement_set",
+    "dto": "no",
+    "pagination": "no",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}

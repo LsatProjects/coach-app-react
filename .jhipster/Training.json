@@ -1,0 +1,30 @@
+{
+    "name": "Training",
+    "fields": [
+        {
+            "fieldName": "name",
+            "fieldType": "String"
+        },
+        {
+            "fieldName": "description",
+            "fieldType": "String"
+        }
+    ],
+    "relationships": [
+        {
+            "relationshipType": "one-to-many",
+            "relationshipName": "phases",
+            "otherEntityName": "phase",
+            "otherEntityRelationshipName": "training"
+        }
+    ],
+    "changelogDate": "20190317140637",
+    "entityTableName": "training",
+    "dto": "no",
+    "pagination": "pagination",
+    "service": "no",
+    "jpaMetamodelFiltering": false,
+    "fluentMethods": true,
+    "clientRootFolder": "",
+    "applications": "*"
+}

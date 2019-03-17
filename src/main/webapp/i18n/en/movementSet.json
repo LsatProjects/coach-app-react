@@ -1,0 +1,27 @@
+{
+  "coachappApp": {
+    "movementSet": {
+      "home": {
+        "title": "Movement Sets",
+        "createLabel": "Create a new Movement Set",
+        "createOrEditLabel": "Create or edit a Movement Set",
+        "search": "Search for Movement Set"
+      },
+      "created": "A new Movement Set is created with identifier {{ param }}",
+      "updated": "A Movement Set is updated with identifier {{ param }}",
+      "deleted": "A Movement Set is deleted with identifier {{ param }}",
+      "delete": {
+        "question": "Are you sure you want to delete Movement Set {{ id }}?"
+      },
+      "detail": {
+        "title": "Movement Set"
+      },
+      "unit": "Unit",
+      "round": "Round",
+      "weight": "Weight",
+      "level": "Level",
+      "phase": "Phase",
+      "movements": "Movements"
+    }
+  }
+}
