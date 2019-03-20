@@ -21,17 +21,17 @@
             "otherEntityRelationshipName": "phase"
         },
         {
+            "relationshipType": "many-to-one",
             "relationshipName": "training",
             "otherEntityName": "training",
-            "relationshipType": "many-to-one",
             "otherEntityField": "id"
         }
     ],
     "changelogDate": "20190317140635",
     "entityTableName": "phase",
-    "dto": "no",
+    "dto": "mapstruct",
     "pagination": "no",
-    "service": "no",
+    "service": "serviceClass",
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",

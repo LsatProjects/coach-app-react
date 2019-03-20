@@ -1,12 +1,11 @@
 package br.com.lsat.coachapp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import br.com.lsat.coachapp.domain.Training;
-import br.com.lsat.coachapp.repository.TrainingRepository;
-import br.com.lsat.coachapp.repository.search.TrainingSearchRepository;
+import br.com.lsat.coachapp.service.TrainingService;
 import br.com.lsat.coachapp.web.rest.errors.BadRequestAlertException;
 import br.com.lsat.coachapp.web.rest.util.HeaderUtil;
 import br.com.lsat.coachapp.web.rest.util.PaginationUtil;
+import br.com.lsat.coachapp.service.dto.TrainingDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,7 +21,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -38,31 +36,27 @@ public class TrainingResource {
 
     private static final String ENTITY_NAME = "training";
 
-    private final TrainingRepository trainingRepository;
+    private final TrainingService trainingService;
 
-    private final TrainingSearchRepository trainingSearchRepository;
-
-    public TrainingResource(TrainingRepository trainingRepository, TrainingSearchRepository trainingSearchRepository) {
-        this.trainingRepository = trainingRepository;
-        this.trainingSearchRepository = trainingSearchRepository;
+    public TrainingResource(TrainingService trainingService) {
+        this.trainingService = trainingService;
     }
 
     /**
      * POST  /trainings : Create a new training.
      *
-     * @param training the training to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new training, or with status 400 (Bad Request) if the training has already an ID
+     * @param trainingDTO the trainingDTO to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new trainingDTO, or with status 400 (Bad Request) if the training has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/trainings")
     @Timed
-    public ResponseEntity<Training> createTraining(@RequestBody Training training) throws URISyntaxException {
-        log.debug("REST request to save Training : {}", training);
-        if (training.getId() != null) {
+    public ResponseEntity<TrainingDTO> createTraining(@RequestBody TrainingDTO trainingDTO) throws URISyntaxException {
+        log.debug("REST request to save Training : {}", trainingDTO);
+        if (trainingDTO.getId() != null) {
             throw new BadRequestAlertException("A new training cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Training result = trainingRepository.save(training);
-        trainingSearchRepository.save(result);
+        TrainingDTO result = trainingService.save(trainingDTO);
         return ResponseEntity.created(new URI("/api/trainings/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -71,23 +65,22 @@ public class TrainingResource {
     /**
      * PUT  /trainings : Updates an existing training.
      *
-     * @param training the training to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated training,
-     * or with status 400 (Bad Request) if the training is not valid,
-     * or with status 500 (Internal Server Error) if the training couldn't be updated
+     * @param trainingDTO the trainingDTO to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated trainingDTO,
+     * or with status 400 (Bad Request) if the trainingDTO is not valid,
+     * or with status 500 (Internal Server Error) if the trainingDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/trainings")
     @Timed
-    public ResponseEntity<Training> updateTraining(@RequestBody Training training) throws URISyntaxException {
-        log.debug("REST request to update Training : {}", training);
-        if (training.getId() == null) {
+    public ResponseEntity<TrainingDTO> updateTraining(@RequestBody TrainingDTO trainingDTO) throws URISyntaxException {
+        log.debug("REST request to update Training : {}", trainingDTO);
+        if (trainingDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Training result = trainingRepository.save(training);
-        trainingSearchRepository.save(result);
+        TrainingDTO result = trainingService.save(trainingDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, training.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, trainingDTO.getId().toString()))
             .body(result);
     }
 
@@ -99,9 +92,9 @@ public class TrainingResource {
      */
     @GetMapping("/trainings")
     @Timed
-    public ResponseEntity<List<Training>> getAllTrainings(Pageable pageable) {
+    public ResponseEntity<List<TrainingDTO>> getAllTrainings(Pageable pageable) {
         log.debug("REST request to get a page of Trainings");
-        Page<Training> page = trainingRepository.findAll(pageable);
+        Page<TrainingDTO> page = trainingService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/trainings");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -109,30 +102,28 @@ public class TrainingResource {
     /**
      * GET  /trainings/:id : get the "id" training.
      *
-     * @param id the id of the training to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the training, or with status 404 (Not Found)
+     * @param id the id of the trainingDTO to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the trainingDTO, or with status 404 (Not Found)
      */
     @GetMapping("/trainings/{id}")
     @Timed
-    public ResponseEntity<Training> getTraining(@PathVariable Long id) {
+    public ResponseEntity<TrainingDTO> getTraining(@PathVariable Long id) {
         log.debug("REST request to get Training : {}", id);
-        Optional<Training> training = trainingRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(training);
+        Optional<TrainingDTO> trainingDTO = trainingService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(trainingDTO);
     }
 
     /**
      * DELETE  /trainings/:id : delete the "id" training.
      *
-     * @param id the id of the training to delete
+     * @param id the id of the trainingDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/trainings/{id}")
     @Timed
     public ResponseEntity<Void> deleteTraining(@PathVariable Long id) {
         log.debug("REST request to delete Training : {}", id);
-
-        trainingRepository.deleteById(id);
-        trainingSearchRepository.deleteById(id);
+        trainingService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
@@ -146,9 +137,9 @@ public class TrainingResource {
      */
     @GetMapping("/_search/trainings")
     @Timed
-    public ResponseEntity<List<Training>> searchTrainings(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<TrainingDTO>> searchTrainings(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Trainings for query {}", query);
-        Page<Training> page = trainingSearchRepository.search(queryStringQuery(query), pageable);
+        Page<TrainingDTO> page = trainingService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/trainings");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

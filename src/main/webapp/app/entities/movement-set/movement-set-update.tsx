@@ -158,7 +158,7 @@ export class MovementSetUpdate extends React.Component<IMovementSetUpdateProps, 
                   <Label for="phase.id">
                     <Translate contentKey="coachappApp.movementSet.phase">Phase</Translate>
                   </Label>
-                  <AvInput id="movement-set-phase" type="select" className="form-control" name="phase.id">
+                  <AvInput id="movement-set-phase" type="select" className="form-control" name="phaseId">
                     <option value="" key="0" />
                     {phases
                       ? phases.map(otherEntity => (

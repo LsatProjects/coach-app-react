@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.MovementCategory;
 import br.com.lsat.coachapp.repository.MovementCategoryRepository;
 import br.com.lsat.coachapp.repository.search.MovementCategorySearchRepository;
+import br.com.lsat.coachapp.service.MovementCategoryService;
+import br.com.lsat.coachapp.service.dto.MovementCategoryDTO;
+import br.com.lsat.coachapp.service.mapper.MovementCategoryMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -52,6 +55,12 @@ public class MovementCategoryResourceIntTest {
     @Autowired
     private MovementCategoryRepository movementCategoryRepository;
 
+    @Autowired
+    private MovementCategoryMapper movementCategoryMapper;
+
+    @Autowired
+    private MovementCategoryService movementCategoryService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -79,7 +88,7 @@ public class MovementCategoryResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MovementCategoryResource movementCategoryResource = new MovementCategoryResource(movementCategoryRepository, mockMovementCategorySearchRepository);
+        final MovementCategoryResource movementCategoryResource = new MovementCategoryResource(movementCategoryService);
         this.restMovementCategoryMockMvc = MockMvcBuilders.standaloneSetup(movementCategoryResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -111,9 +120,10 @@ public class MovementCategoryResourceIntTest {
         int databaseSizeBeforeCreate = movementCategoryRepository.findAll().size();
 
         // Create the MovementCategory
+        MovementCategoryDTO movementCategoryDTO = movementCategoryMapper.toDto(movementCategory);
         restMovementCategoryMockMvc.perform(post("/api/movement-categories")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementCategory)))
+            .content(TestUtil.convertObjectToJsonBytes(movementCategoryDTO)))
             .andExpect(status().isCreated());
 
         // Validate the MovementCategory in the database
@@ -134,11 +144,12 @@ public class MovementCategoryResourceIntTest {
 
         // Create the MovementCategory with an existing ID
         movementCategory.setId(1L);
+        MovementCategoryDTO movementCategoryDTO = movementCategoryMapper.toDto(movementCategory);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restMovementCategoryMockMvc.perform(post("/api/movement-categories")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementCategory)))
+            .content(TestUtil.convertObjectToJsonBytes(movementCategoryDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the MovementCategory in the database
@@ -157,10 +168,11 @@ public class MovementCategoryResourceIntTest {
         movementCategory.setName(null);
 
         // Create the MovementCategory, which fails.
+        MovementCategoryDTO movementCategoryDTO = movementCategoryMapper.toDto(movementCategory);
 
         restMovementCategoryMockMvc.perform(post("/api/movement-categories")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementCategory)))
+            .content(TestUtil.convertObjectToJsonBytes(movementCategoryDTO)))
             .andExpect(status().isBadRequest());
 
         List<MovementCategory> movementCategoryList = movementCategoryRepository.findAll();
@@ -220,10 +232,11 @@ public class MovementCategoryResourceIntTest {
         updatedMovementCategory
             .name(UPDATED_NAME)
             .description(UPDATED_DESCRIPTION);
+        MovementCategoryDTO movementCategoryDTO = movementCategoryMapper.toDto(updatedMovementCategory);
 
         restMovementCategoryMockMvc.perform(put("/api/movement-categories")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedMovementCategory)))
+            .content(TestUtil.convertObjectToJsonBytes(movementCategoryDTO)))
             .andExpect(status().isOk());
 
         // Validate the MovementCategory in the database
@@ -243,11 +256,12 @@ public class MovementCategoryResourceIntTest {
         int databaseSizeBeforeUpdate = movementCategoryRepository.findAll().size();
 
         // Create the MovementCategory
+        MovementCategoryDTO movementCategoryDTO = movementCategoryMapper.toDto(movementCategory);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restMovementCategoryMockMvc.perform(put("/api/movement-categories")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementCategory)))
+            .content(TestUtil.convertObjectToJsonBytes(movementCategoryDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the MovementCategory in the database
@@ -308,5 +322,28 @@ public class MovementCategoryResourceIntTest {
         assertThat(movementCategory1).isNotEqualTo(movementCategory2);
         movementCategory1.setId(null);
         assertThat(movementCategory1).isNotEqualTo(movementCategory2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(MovementCategoryDTO.class);
+        MovementCategoryDTO movementCategoryDTO1 = new MovementCategoryDTO();
+        movementCategoryDTO1.setId(1L);
+        MovementCategoryDTO movementCategoryDTO2 = new MovementCategoryDTO();
+        assertThat(movementCategoryDTO1).isNotEqualTo(movementCategoryDTO2);
+        movementCategoryDTO2.setId(movementCategoryDTO1.getId());
+        assertThat(movementCategoryDTO1).isEqualTo(movementCategoryDTO2);
+        movementCategoryDTO2.setId(2L);
+        assertThat(movementCategoryDTO1).isNotEqualTo(movementCategoryDTO2);
+        movementCategoryDTO1.setId(null);
+        assertThat(movementCategoryDTO1).isNotEqualTo(movementCategoryDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(movementCategoryMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(movementCategoryMapper.fromId(null)).isNull();
     }
 }

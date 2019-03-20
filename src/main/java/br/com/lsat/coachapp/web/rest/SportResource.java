@@ -1,11 +1,10 @@
 package br.com.lsat.coachapp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import br.com.lsat.coachapp.domain.Sport;
-import br.com.lsat.coachapp.repository.SportRepository;
-import br.com.lsat.coachapp.repository.search.SportSearchRepository;
+import br.com.lsat.coachapp.service.SportService;
 import br.com.lsat.coachapp.web.rest.errors.BadRequestAlertException;
 import br.com.lsat.coachapp.web.rest.util.HeaderUtil;
+import br.com.lsat.coachapp.service.dto.SportDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +17,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -34,31 +32,27 @@ public class SportResource {
 
     private static final String ENTITY_NAME = "sport";
 
-    private final SportRepository sportRepository;
+    private final SportService sportService;
 
-    private final SportSearchRepository sportSearchRepository;
-
-    public SportResource(SportRepository sportRepository, SportSearchRepository sportSearchRepository) {
-        this.sportRepository = sportRepository;
-        this.sportSearchRepository = sportSearchRepository;
+    public SportResource(SportService sportService) {
+        this.sportService = sportService;
     }
 
     /**
      * POST  /sports : Create a new sport.
      *
-     * @param sport the sport to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new sport, or with status 400 (Bad Request) if the sport has already an ID
+     * @param sportDTO the sportDTO to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new sportDTO, or with status 400 (Bad Request) if the sport has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/sports")
     @Timed
-    public ResponseEntity<Sport> createSport(@Valid @RequestBody Sport sport) throws URISyntaxException {
-        log.debug("REST request to save Sport : {}", sport);
-        if (sport.getId() != null) {
+    public ResponseEntity<SportDTO> createSport(@Valid @RequestBody SportDTO sportDTO) throws URISyntaxException {
+        log.debug("REST request to save Sport : {}", sportDTO);
+        if (sportDTO.getId() != null) {
             throw new BadRequestAlertException("A new sport cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Sport result = sportRepository.save(sport);
-        sportSearchRepository.save(result);
+        SportDTO result = sportService.save(sportDTO);
         return ResponseEntity.created(new URI("/api/sports/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -67,23 +61,22 @@ public class SportResource {
     /**
      * PUT  /sports : Updates an existing sport.
      *
-     * @param sport the sport to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated sport,
-     * or with status 400 (Bad Request) if the sport is not valid,
-     * or with status 500 (Internal Server Error) if the sport couldn't be updated
+     * @param sportDTO the sportDTO to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated sportDTO,
+     * or with status 400 (Bad Request) if the sportDTO is not valid,
+     * or with status 500 (Internal Server Error) if the sportDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/sports")
     @Timed
-    public ResponseEntity<Sport> updateSport(@Valid @RequestBody Sport sport) throws URISyntaxException {
-        log.debug("REST request to update Sport : {}", sport);
-        if (sport.getId() == null) {
+    public ResponseEntity<SportDTO> updateSport(@Valid @RequestBody SportDTO sportDTO) throws URISyntaxException {
+        log.debug("REST request to update Sport : {}", sportDTO);
+        if (sportDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Sport result = sportRepository.save(sport);
-        sportSearchRepository.save(result);
+        SportDTO result = sportService.save(sportDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, sport.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, sportDTO.getId().toString()))
             .body(result);
     }
 
@@ -94,38 +87,36 @@ public class SportResource {
      */
     @GetMapping("/sports")
     @Timed
-    public List<Sport> getAllSports() {
+    public List<SportDTO> getAllSports() {
         log.debug("REST request to get all Sports");
-        return sportRepository.findAll();
+        return sportService.findAll();
     }
 
     /**
      * GET  /sports/:id : get the "id" sport.
      *
-     * @param id the id of the sport to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the sport, or with status 404 (Not Found)
+     * @param id the id of the sportDTO to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the sportDTO, or with status 404 (Not Found)
      */
     @GetMapping("/sports/{id}")
     @Timed
-    public ResponseEntity<Sport> getSport(@PathVariable Long id) {
+    public ResponseEntity<SportDTO> getSport(@PathVariable Long id) {
         log.debug("REST request to get Sport : {}", id);
-        Optional<Sport> sport = sportRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(sport);
+        Optional<SportDTO> sportDTO = sportService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(sportDTO);
     }
 
     /**
      * DELETE  /sports/:id : delete the "id" sport.
      *
-     * @param id the id of the sport to delete
+     * @param id the id of the sportDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/sports/{id}")
     @Timed
     public ResponseEntity<Void> deleteSport(@PathVariable Long id) {
         log.debug("REST request to delete Sport : {}", id);
-
-        sportRepository.deleteById(id);
-        sportSearchRepository.deleteById(id);
+        sportService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
@@ -138,11 +129,9 @@ public class SportResource {
      */
     @GetMapping("/_search/sports")
     @Timed
-    public List<Sport> searchSports(@RequestParam String query) {
+    public List<SportDTO> searchSports(@RequestParam String query) {
         log.debug("REST request to search Sports for query {}", query);
-        return StreamSupport
-            .stream(sportSearchRepository.search(queryStringQuery(query)).spliterator(), false)
-            .collect(Collectors.toList());
+        return sportService.search(query);
     }
 
 }

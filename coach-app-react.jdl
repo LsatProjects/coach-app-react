@@ -1,0 +1,59 @@
+// JDL definition for application 'coachapp' generated with command 'jhipster export-jdl'
+
+entity Sport {
+  name String required,
+  description String
+}
+entity MovementCategory {
+  name String required,
+  description String
+}
+entity Movement {
+  name String required,
+  abreviation String,
+  description String,
+  url String
+}
+entity Phase {
+  name String required,
+  description String
+}
+entity MovementSet {
+  unit Unit,
+  round Integer,
+  weight Float,
+  level Level
+}
+entity Training {
+  name String,
+  description String
+}
+
+enum Unit {
+  REP,
+  CAL,
+  METER
+}
+
+enum Level {
+  RX,
+  SCALE,
+  BEGINNER,
+  INTERMEDIATE
+}
+
+relationship OneToMany {
+  MovementSet{movements} to Movement{movementSet},
+  Training{phases} to Phase{training},
+  Phase{movementSets} to MovementSet{phase}
+}
+relationship ManyToOne {
+  MovementCategory{sport} to Sport,
+  Movement{movementCategory} to MovementCategory
+}
+
+paginate Movement with pager
+paginate Training with pagination
+
+dto * with mapstruct
+service all with serviceClass

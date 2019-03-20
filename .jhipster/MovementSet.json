@@ -22,23 +22,23 @@
     ],
     "relationships": [
         {
-            "relationshipName": "phase",
-            "otherEntityName": "phase",
-            "relationshipType": "many-to-one",
-            "otherEntityField": "id"
-        },
-        {
             "relationshipType": "one-to-many",
             "relationshipName": "movements",
             "otherEntityName": "movement",
             "otherEntityRelationshipName": "movementSet"
+        },
+        {
+            "relationshipType": "many-to-one",
+            "relationshipName": "phase",
+            "otherEntityName": "phase",
+            "otherEntityField": "id"
         }
     ],
     "changelogDate": "20190317140636",
     "entityTableName": "movement_set",
-    "dto": "no",
+    "dto": "mapstruct",
     "pagination": "no",
-    "service": "no",
+    "service": "serviceClass",
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",

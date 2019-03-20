@@ -46,13 +46,13 @@ public class MovementSet implements Serializable {
     @Column(name = "jhi_level")
     private Level level;
 
+    @OneToMany(mappedBy = "movementSet")
+    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
+    private Set<Movement> movements = new HashSet<>();
     @ManyToOne
     @JsonIgnoreProperties("movementSets")
     private Phase phase;
 
-    @OneToMany(mappedBy = "movementSet")
-    @Cache(usage = CacheConcurrencyStrategy.NONSTRICT_READ_WRITE)
-    private Set<Movement> movements = new HashSet<>();
     // jhipster-needle-entity-add-field - JHipster will add fields here, do not remove
     public Long getId() {
         return id;
@@ -114,19 +114,6 @@ public class MovementSet implements Serializable {
         this.level = level;
     }
 
-    public Phase getPhase() {
-        return phase;
-    }
-
-    public MovementSet phase(Phase phase) {
-        this.phase = phase;
-        return this;
-    }
-
-    public void setPhase(Phase phase) {
-        this.phase = phase;
-    }
-
     public Set<Movement> getMovements() {
         return movements;
     }
@@ -150,6 +137,19 @@ public class MovementSet implements Serializable {
 
     public void setMovements(Set<Movement> movements) {
         this.movements = movements;
+    }
+
+    public Phase getPhase() {
+        return phase;
+    }
+
+    public MovementSet phase(Phase phase) {
+        this.phase = phase;
+        return this;
+    }
+
+    public void setPhase(Phase phase) {
+        this.phase = phase;
     }
     // jhipster-needle-entity-add-getters-setters - JHipster will add getters and setters here, do not remove
 

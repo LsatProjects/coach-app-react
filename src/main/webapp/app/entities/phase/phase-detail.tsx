@@ -43,7 +43,7 @@ export class PhaseDetail extends React.Component<IPhaseDetailProps> {
             <dt>
               <Translate contentKey="coachappApp.phase.training">Training</Translate>
             </dt>
-            <dd>{phaseEntity.training ? phaseEntity.training.id : ''}</dd>
+            <dd>{phaseEntity.trainingId ? phaseEntity.trainingId : ''}</dd>
           </dl>
           <Button tag={Link} to="/entity/phase" replace color="info">
             <FontAwesomeIcon icon="arrow-left" />{' '}

@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.Sport;
 import br.com.lsat.coachapp.repository.SportRepository;
 import br.com.lsat.coachapp.repository.search.SportSearchRepository;
+import br.com.lsat.coachapp.service.SportService;
+import br.com.lsat.coachapp.service.dto.SportDTO;
+import br.com.lsat.coachapp.service.mapper.SportMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -52,6 +55,12 @@ public class SportResourceIntTest {
     @Autowired
     private SportRepository sportRepository;
 
+    @Autowired
+    private SportMapper sportMapper;
+
+    @Autowired
+    private SportService sportService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -79,7 +88,7 @@ public class SportResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final SportResource sportResource = new SportResource(sportRepository, mockSportSearchRepository);
+        final SportResource sportResource = new SportResource(sportService);
         this.restSportMockMvc = MockMvcBuilders.standaloneSetup(sportResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -111,9 +120,10 @@ public class SportResourceIntTest {
         int databaseSizeBeforeCreate = sportRepository.findAll().size();
 
         // Create the Sport
+        SportDTO sportDTO = sportMapper.toDto(sport);
         restSportMockMvc.perform(post("/api/sports")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(sport)))
+            .content(TestUtil.convertObjectToJsonBytes(sportDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Sport in the database
@@ -134,11 +144,12 @@ public class SportResourceIntTest {
 
         // Create the Sport with an existing ID
         sport.setId(1L);
+        SportDTO sportDTO = sportMapper.toDto(sport);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restSportMockMvc.perform(post("/api/sports")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(sport)))
+            .content(TestUtil.convertObjectToJsonBytes(sportDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Sport in the database
@@ -157,10 +168,11 @@ public class SportResourceIntTest {
         sport.setName(null);
 
         // Create the Sport, which fails.
+        SportDTO sportDTO = sportMapper.toDto(sport);
 
         restSportMockMvc.perform(post("/api/sports")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(sport)))
+            .content(TestUtil.convertObjectToJsonBytes(sportDTO)))
             .andExpect(status().isBadRequest());
 
         List<Sport> sportList = sportRepository.findAll();
@@ -220,10 +232,11 @@ public class SportResourceIntTest {
         updatedSport
             .name(UPDATED_NAME)
             .description(UPDATED_DESCRIPTION);
+        SportDTO sportDTO = sportMapper.toDto(updatedSport);
 
         restSportMockMvc.perform(put("/api/sports")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedSport)))
+            .content(TestUtil.convertObjectToJsonBytes(sportDTO)))
             .andExpect(status().isOk());
 
         // Validate the Sport in the database
@@ -243,11 +256,12 @@ public class SportResourceIntTest {
         int databaseSizeBeforeUpdate = sportRepository.findAll().size();
 
         // Create the Sport
+        SportDTO sportDTO = sportMapper.toDto(sport);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restSportMockMvc.perform(put("/api/sports")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(sport)))
+            .content(TestUtil.convertObjectToJsonBytes(sportDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Sport in the database
@@ -308,5 +322,28 @@ public class SportResourceIntTest {
         assertThat(sport1).isNotEqualTo(sport2);
         sport1.setId(null);
         assertThat(sport1).isNotEqualTo(sport2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(SportDTO.class);
+        SportDTO sportDTO1 = new SportDTO();
+        sportDTO1.setId(1L);
+        SportDTO sportDTO2 = new SportDTO();
+        assertThat(sportDTO1).isNotEqualTo(sportDTO2);
+        sportDTO2.setId(sportDTO1.getId());
+        assertThat(sportDTO1).isEqualTo(sportDTO2);
+        sportDTO2.setId(2L);
+        assertThat(sportDTO1).isNotEqualTo(sportDTO2);
+        sportDTO1.setId(null);
+        assertThat(sportDTO1).isNotEqualTo(sportDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(sportMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(sportMapper.fromId(null)).isNull();
     }
 }

@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.Phase;
 import br.com.lsat.coachapp.repository.PhaseRepository;
 import br.com.lsat.coachapp.repository.search.PhaseSearchRepository;
+import br.com.lsat.coachapp.service.PhaseService;
+import br.com.lsat.coachapp.service.dto.PhaseDTO;
+import br.com.lsat.coachapp.service.mapper.PhaseMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -52,6 +55,12 @@ public class PhaseResourceIntTest {
     @Autowired
     private PhaseRepository phaseRepository;
 
+    @Autowired
+    private PhaseMapper phaseMapper;
+
+    @Autowired
+    private PhaseService phaseService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -79,7 +88,7 @@ public class PhaseResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final PhaseResource phaseResource = new PhaseResource(phaseRepository, mockPhaseSearchRepository);
+        final PhaseResource phaseResource = new PhaseResource(phaseService);
         this.restPhaseMockMvc = MockMvcBuilders.standaloneSetup(phaseResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -111,9 +120,10 @@ public class PhaseResourceIntTest {
         int databaseSizeBeforeCreate = phaseRepository.findAll().size();
 
         // Create the Phase
+        PhaseDTO phaseDTO = phaseMapper.toDto(phase);
         restPhaseMockMvc.perform(post("/api/phases")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(phase)))
+            .content(TestUtil.convertObjectToJsonBytes(phaseDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Phase in the database
@@ -134,11 +144,12 @@ public class PhaseResourceIntTest {
 
         // Create the Phase with an existing ID
         phase.setId(1L);
+        PhaseDTO phaseDTO = phaseMapper.toDto(phase);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restPhaseMockMvc.perform(post("/api/phases")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(phase)))
+            .content(TestUtil.convertObjectToJsonBytes(phaseDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Phase in the database
@@ -157,10 +168,11 @@ public class PhaseResourceIntTest {
         phase.setName(null);
 
         // Create the Phase, which fails.
+        PhaseDTO phaseDTO = phaseMapper.toDto(phase);
 
         restPhaseMockMvc.perform(post("/api/phases")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(phase)))
+            .content(TestUtil.convertObjectToJsonBytes(phaseDTO)))
             .andExpect(status().isBadRequest());
 
         List<Phase> phaseList = phaseRepository.findAll();
@@ -220,10 +232,11 @@ public class PhaseResourceIntTest {
         updatedPhase
             .name(UPDATED_NAME)
             .description(UPDATED_DESCRIPTION);
+        PhaseDTO phaseDTO = phaseMapper.toDto(updatedPhase);
 
         restPhaseMockMvc.perform(put("/api/phases")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedPhase)))
+            .content(TestUtil.convertObjectToJsonBytes(phaseDTO)))
             .andExpect(status().isOk());
 
         // Validate the Phase in the database
@@ -243,11 +256,12 @@ public class PhaseResourceIntTest {
         int databaseSizeBeforeUpdate = phaseRepository.findAll().size();
 
         // Create the Phase
+        PhaseDTO phaseDTO = phaseMapper.toDto(phase);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restPhaseMockMvc.perform(put("/api/phases")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(phase)))
+            .content(TestUtil.convertObjectToJsonBytes(phaseDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Phase in the database
@@ -308,5 +322,28 @@ public class PhaseResourceIntTest {
         assertThat(phase1).isNotEqualTo(phase2);
         phase1.setId(null);
         assertThat(phase1).isNotEqualTo(phase2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(PhaseDTO.class);
+        PhaseDTO phaseDTO1 = new PhaseDTO();
+        phaseDTO1.setId(1L);
+        PhaseDTO phaseDTO2 = new PhaseDTO();
+        assertThat(phaseDTO1).isNotEqualTo(phaseDTO2);
+        phaseDTO2.setId(phaseDTO1.getId());
+        assertThat(phaseDTO1).isEqualTo(phaseDTO2);
+        phaseDTO2.setId(2L);
+        assertThat(phaseDTO1).isNotEqualTo(phaseDTO2);
+        phaseDTO1.setId(null);
+        assertThat(phaseDTO1).isNotEqualTo(phaseDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(phaseMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(phaseMapper.fromId(null)).isNull();
     }
 }

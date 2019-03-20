@@ -107,7 +107,7 @@ export class Phase extends React.Component<IPhaseProps, IPhaseState> {
                   </td>
                   <td>{phase.name}</td>
                   <td>{phase.description}</td>
-                  <td>{phase.training ? <Link to={`training/${phase.training.id}`}>{phase.training.id}</Link> : ''}</td>
+                  <td>{phase.trainingId ? <Link to={`training/${phase.trainingId}`}>{phase.trainingId}</Link> : ''}</td>
                   <td className="text-right">
                     <div className="btn-group flex-btn-group-container">
                       <Button tag={Link} to={`${match.url}/${phase.id}`} color="info" size="sm">

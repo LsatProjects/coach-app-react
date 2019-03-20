@@ -55,11 +55,11 @@ export class MovementDetail extends React.Component<IMovementDetailProps> {
             <dt>
               <Translate contentKey="coachappApp.movement.movementCategory">Movement Category</Translate>
             </dt>
-            <dd>{movementEntity.movementCategory ? movementEntity.movementCategory.id : ''}</dd>
+            <dd>{movementEntity.movementCategoryId ? movementEntity.movementCategoryId : ''}</dd>
             <dt>
               <Translate contentKey="coachappApp.movement.movementSet">Movement Set</Translate>
             </dt>
-            <dd>{movementEntity.movementSet ? movementEntity.movementSet.id : ''}</dd>
+            <dd>{movementEntity.movementSetId ? movementEntity.movementSetId : ''}</dd>
           </dl>
           <Button tag={Link} to="/entity/movement" replace color="info">
             <FontAwesomeIcon icon="arrow-left" />{' '}

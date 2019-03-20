@@ -118,7 +118,7 @@ export class MovementCategoryUpdate extends React.Component<IMovementCategoryUpd
                   <Label for="sport.id">
                     <Translate contentKey="coachappApp.movementCategory.sport">Sport</Translate>
                   </Label>
-                  <AvInput id="movement-category-sport" type="select" className="form-control" name="sport.id">
+                  <AvInput id="movement-category-sport" type="select" className="form-control" name="sportId">
                     <option value="" key="0" />
                     {sports
                       ? sports.map(otherEntity => (

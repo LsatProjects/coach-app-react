@@ -1,12 +1,11 @@
 package br.com.lsat.coachapp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import br.com.lsat.coachapp.domain.Movement;
-import br.com.lsat.coachapp.repository.MovementRepository;
-import br.com.lsat.coachapp.repository.search.MovementSearchRepository;
+import br.com.lsat.coachapp.service.MovementService;
 import br.com.lsat.coachapp.web.rest.errors.BadRequestAlertException;
 import br.com.lsat.coachapp.web.rest.util.HeaderUtil;
 import br.com.lsat.coachapp.web.rest.util.PaginationUtil;
+import br.com.lsat.coachapp.service.dto.MovementDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +22,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -39,31 +37,27 @@ public class MovementResource {
 
     private static final String ENTITY_NAME = "movement";
 
-    private final MovementRepository movementRepository;
+    private final MovementService movementService;
 
-    private final MovementSearchRepository movementSearchRepository;
-
-    public MovementResource(MovementRepository movementRepository, MovementSearchRepository movementSearchRepository) {
-        this.movementRepository = movementRepository;
-        this.movementSearchRepository = movementSearchRepository;
+    public MovementResource(MovementService movementService) {
+        this.movementService = movementService;
     }
 
     /**
      * POST  /movements : Create a new movement.
      *
-     * @param movement the movement to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new movement, or with status 400 (Bad Request) if the movement has already an ID
+     * @param movementDTO the movementDTO to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new movementDTO, or with status 400 (Bad Request) if the movement has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/movements")
     @Timed
-    public ResponseEntity<Movement> createMovement(@Valid @RequestBody Movement movement) throws URISyntaxException {
-        log.debug("REST request to save Movement : {}", movement);
-        if (movement.getId() != null) {
+    public ResponseEntity<MovementDTO> createMovement(@Valid @RequestBody MovementDTO movementDTO) throws URISyntaxException {
+        log.debug("REST request to save Movement : {}", movementDTO);
+        if (movementDTO.getId() != null) {
             throw new BadRequestAlertException("A new movement cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        Movement result = movementRepository.save(movement);
-        movementSearchRepository.save(result);
+        MovementDTO result = movementService.save(movementDTO);
         return ResponseEntity.created(new URI("/api/movements/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -72,23 +66,22 @@ public class MovementResource {
     /**
      * PUT  /movements : Updates an existing movement.
      *
-     * @param movement the movement to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated movement,
-     * or with status 400 (Bad Request) if the movement is not valid,
-     * or with status 500 (Internal Server Error) if the movement couldn't be updated
+     * @param movementDTO the movementDTO to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated movementDTO,
+     * or with status 400 (Bad Request) if the movementDTO is not valid,
+     * or with status 500 (Internal Server Error) if the movementDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/movements")
     @Timed
-    public ResponseEntity<Movement> updateMovement(@Valid @RequestBody Movement movement) throws URISyntaxException {
-        log.debug("REST request to update Movement : {}", movement);
-        if (movement.getId() == null) {
+    public ResponseEntity<MovementDTO> updateMovement(@Valid @RequestBody MovementDTO movementDTO) throws URISyntaxException {
+        log.debug("REST request to update Movement : {}", movementDTO);
+        if (movementDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        Movement result = movementRepository.save(movement);
-        movementSearchRepository.save(result);
+        MovementDTO result = movementService.save(movementDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, movement.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, movementDTO.getId().toString()))
             .body(result);
     }
 
@@ -100,9 +93,9 @@ public class MovementResource {
      */
     @GetMapping("/movements")
     @Timed
-    public ResponseEntity<List<Movement>> getAllMovements(Pageable pageable) {
+    public ResponseEntity<List<MovementDTO>> getAllMovements(Pageable pageable) {
         log.debug("REST request to get a page of Movements");
-        Page<Movement> page = movementRepository.findAll(pageable);
+        Page<MovementDTO> page = movementService.findAll(pageable);
         HttpHeaders headers = PaginationUtil.generatePaginationHttpHeaders(page, "/api/movements");
         return ResponseEntity.ok().headers(headers).body(page.getContent());
     }
@@ -110,30 +103,28 @@ public class MovementResource {
     /**
      * GET  /movements/:id : get the "id" movement.
      *
-     * @param id the id of the movement to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the movement, or with status 404 (Not Found)
+     * @param id the id of the movementDTO to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the movementDTO, or with status 404 (Not Found)
      */
     @GetMapping("/movements/{id}")
     @Timed
-    public ResponseEntity<Movement> getMovement(@PathVariable Long id) {
+    public ResponseEntity<MovementDTO> getMovement(@PathVariable Long id) {
         log.debug("REST request to get Movement : {}", id);
-        Optional<Movement> movement = movementRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(movement);
+        Optional<MovementDTO> movementDTO = movementService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(movementDTO);
     }
 
     /**
      * DELETE  /movements/:id : delete the "id" movement.
      *
-     * @param id the id of the movement to delete
+     * @param id the id of the movementDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/movements/{id}")
     @Timed
     public ResponseEntity<Void> deleteMovement(@PathVariable Long id) {
         log.debug("REST request to delete Movement : {}", id);
-
-        movementRepository.deleteById(id);
-        movementSearchRepository.deleteById(id);
+        movementService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
@@ -147,9 +138,9 @@ public class MovementResource {
      */
     @GetMapping("/_search/movements")
     @Timed
-    public ResponseEntity<List<Movement>> searchMovements(@RequestParam String query, Pageable pageable) {
+    public ResponseEntity<List<MovementDTO>> searchMovements(@RequestParam String query, Pageable pageable) {
         log.debug("REST request to search for a page of Movements for query {}", query);
-        Page<Movement> page = movementSearchRepository.search(queryStringQuery(query), pageable);
+        Page<MovementDTO> page = movementService.search(query, pageable);
         HttpHeaders headers = PaginationUtil.generateSearchPaginationHttpHeaders(query, page, "/api/_search/movements");
         return new ResponseEntity<>(page.getContent(), headers, HttpStatus.OK);
     }

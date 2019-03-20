@@ -135,7 +135,7 @@ export class MovementUpdate extends React.Component<IMovementUpdateProps, IMovem
                   <Label for="movementCategory.id">
                     <Translate contentKey="coachappApp.movement.movementCategory">Movement Category</Translate>
                   </Label>
-                  <AvInput id="movement-movementCategory" type="select" className="form-control" name="movementCategory.id">
+                  <AvInput id="movement-movementCategory" type="select" className="form-control" name="movementCategoryId">
                     <option value="" key="0" />
                     {movementCategories
                       ? movementCategories.map(otherEntity => (
@@ -150,7 +150,7 @@ export class MovementUpdate extends React.Component<IMovementUpdateProps, IMovem
                   <Label for="movementSet.id">
                     <Translate contentKey="coachappApp.movement.movementSet">Movement Set</Translate>
                   </Label>
-                  <AvInput id="movement-movementSet" type="select" className="form-control" name="movementSet.id">
+                  <AvInput id="movement-movementSet" type="select" className="form-control" name="movementSetId">
                     <option value="" key="0" />
                     {movementSets
                       ? movementSets.map(otherEntity => (

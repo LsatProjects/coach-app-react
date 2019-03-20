@@ -44,7 +44,7 @@ export class MovementCategoryDetail extends React.Component<IMovementCategoryDet
             <dt>
               <Translate contentKey="coachappApp.movementCategory.sport">Sport</Translate>
             </dt>
-            <dd>{movementCategoryEntity.sport ? movementCategoryEntity.sport.id : ''}</dd>
+            <dd>{movementCategoryEntity.sportId ? movementCategoryEntity.sportId : ''}</dd>
           </dl>
           <Button tag={Link} to="/entity/movement-category" replace color="info">
             <FontAwesomeIcon icon="arrow-left" />{' '}

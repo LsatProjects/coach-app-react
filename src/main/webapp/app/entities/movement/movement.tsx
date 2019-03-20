@@ -153,14 +153,14 @@ export class Movement extends React.Component<IMovementProps, IMovementState> {
                   <td>{movement.description}</td>
                   <td>{movement.url}</td>
                   <td>
-                    {movement.movementCategory ? (
-                      <Link to={`movement-category/${movement.movementCategory.id}`}>{movement.movementCategory.id}</Link>
+                    {movement.movementCategoryId ? (
+                      <Link to={`movement-category/${movement.movementCategoryId}`}>{movement.movementCategoryId}</Link>
                     ) : (
                       ''
                     )}
                   </td>
                   <td>
-                    {movement.movementSet ? <Link to={`movement-set/${movement.movementSet.id}`}>{movement.movementSet.id}</Link> : ''}
+                    {movement.movementSetId ? <Link to={`movement-set/${movement.movementSetId}`}>{movement.movementSetId}</Link> : ''}
                   </td>
                   <td className="text-right">
                     <div className="btn-group flex-btn-group-container">

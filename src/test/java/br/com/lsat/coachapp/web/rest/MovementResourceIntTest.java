@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.Movement;
 import br.com.lsat.coachapp.repository.MovementRepository;
 import br.com.lsat.coachapp.repository.search.MovementSearchRepository;
+import br.com.lsat.coachapp.service.MovementService;
+import br.com.lsat.coachapp.service.dto.MovementDTO;
+import br.com.lsat.coachapp.service.mapper.MovementMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -60,6 +63,12 @@ public class MovementResourceIntTest {
     @Autowired
     private MovementRepository movementRepository;
 
+    @Autowired
+    private MovementMapper movementMapper;
+
+    @Autowired
+    private MovementService movementService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -87,7 +96,7 @@ public class MovementResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MovementResource movementResource = new MovementResource(movementRepository, mockMovementSearchRepository);
+        final MovementResource movementResource = new MovementResource(movementService);
         this.restMovementMockMvc = MockMvcBuilders.standaloneSetup(movementResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -121,9 +130,10 @@ public class MovementResourceIntTest {
         int databaseSizeBeforeCreate = movementRepository.findAll().size();
 
         // Create the Movement
+        MovementDTO movementDTO = movementMapper.toDto(movement);
         restMovementMockMvc.perform(post("/api/movements")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movement)))
+            .content(TestUtil.convertObjectToJsonBytes(movementDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Movement in the database
@@ -146,11 +156,12 @@ public class MovementResourceIntTest {
 
         // Create the Movement with an existing ID
         movement.setId(1L);
+        MovementDTO movementDTO = movementMapper.toDto(movement);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restMovementMockMvc.perform(post("/api/movements")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movement)))
+            .content(TestUtil.convertObjectToJsonBytes(movementDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Movement in the database
@@ -169,10 +180,11 @@ public class MovementResourceIntTest {
         movement.setName(null);
 
         // Create the Movement, which fails.
+        MovementDTO movementDTO = movementMapper.toDto(movement);
 
         restMovementMockMvc.perform(post("/api/movements")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movement)))
+            .content(TestUtil.convertObjectToJsonBytes(movementDTO)))
             .andExpect(status().isBadRequest());
 
         List<Movement> movementList = movementRepository.findAll();
@@ -238,10 +250,11 @@ public class MovementResourceIntTest {
             .abreviation(UPDATED_ABREVIATION)
             .description(UPDATED_DESCRIPTION)
             .url(UPDATED_URL);
+        MovementDTO movementDTO = movementMapper.toDto(updatedMovement);
 
         restMovementMockMvc.perform(put("/api/movements")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedMovement)))
+            .content(TestUtil.convertObjectToJsonBytes(movementDTO)))
             .andExpect(status().isOk());
 
         // Validate the Movement in the database
@@ -263,11 +276,12 @@ public class MovementResourceIntTest {
         int databaseSizeBeforeUpdate = movementRepository.findAll().size();
 
         // Create the Movement
+        MovementDTO movementDTO = movementMapper.toDto(movement);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restMovementMockMvc.perform(put("/api/movements")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movement)))
+            .content(TestUtil.convertObjectToJsonBytes(movementDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Movement in the database
@@ -330,5 +344,28 @@ public class MovementResourceIntTest {
         assertThat(movement1).isNotEqualTo(movement2);
         movement1.setId(null);
         assertThat(movement1).isNotEqualTo(movement2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(MovementDTO.class);
+        MovementDTO movementDTO1 = new MovementDTO();
+        movementDTO1.setId(1L);
+        MovementDTO movementDTO2 = new MovementDTO();
+        assertThat(movementDTO1).isNotEqualTo(movementDTO2);
+        movementDTO2.setId(movementDTO1.getId());
+        assertThat(movementDTO1).isEqualTo(movementDTO2);
+        movementDTO2.setId(2L);
+        assertThat(movementDTO1).isNotEqualTo(movementDTO2);
+        movementDTO1.setId(null);
+        assertThat(movementDTO1).isNotEqualTo(movementDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(movementMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(movementMapper.fromId(null)).isNull();
     }
 }

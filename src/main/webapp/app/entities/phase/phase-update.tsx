@@ -118,7 +118,7 @@ export class PhaseUpdate extends React.Component<IPhaseUpdateProps, IPhaseUpdate
                   <Label for="training.id">
                     <Translate contentKey="coachappApp.phase.training">Training</Translate>
                   </Label>
-                  <AvInput id="phase-training" type="select" className="form-control" name="training.id">
+                  <AvInput id="phase-training" type="select" className="form-control" name="trainingId">
                     <option value="" key="0" />
                     {trainings
                       ? trainings.map(otherEntity => (

@@ -1,4 +1,3 @@
-import { IPhase } from 'app/shared/model//phase.model';
 import { IMovement } from 'app/shared/model//movement.model';
 
 export const enum Unit {
@@ -20,8 +19,8 @@ export interface IMovementSet {
   round?: number;
   weight?: number;
   level?: Level;
-  phase?: IPhase;
   movements?: IMovement[];
+  phaseId?: number;
 }
 
 export const defaultValue: Readonly<IMovementSet> = {};

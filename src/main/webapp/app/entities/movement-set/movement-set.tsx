@@ -119,7 +119,7 @@ export class MovementSet extends React.Component<IMovementSetProps, IMovementSet
                   <td>
                     <Translate contentKey={`coachappApp.Level.${movementSet.level}`} />
                   </td>
-                  <td>{movementSet.phase ? <Link to={`phase/${movementSet.phase.id}`}>{movementSet.phase.id}</Link> : ''}</td>
+                  <td>{movementSet.phaseId ? <Link to={`phase/${movementSet.phaseId}`}>{movementSet.phaseId}</Link> : ''}</td>
                   <td className="text-right">
                     <div className="btn-group flex-btn-group-container">
                       <Button tag={Link} to={`${match.url}/${movementSet.id}`} color="info" size="sm">

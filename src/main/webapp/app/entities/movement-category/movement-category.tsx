@@ -108,7 +108,7 @@ export class MovementCategory extends React.Component<IMovementCategoryProps, IM
                   <td>{movementCategory.name}</td>
                   <td>{movementCategory.description}</td>
                   <td>
-                    {movementCategory.sport ? <Link to={`sport/${movementCategory.sport.id}`}>{movementCategory.sport.id}</Link> : ''}
+                    {movementCategory.sportId ? <Link to={`sport/${movementCategory.sportId}`}>{movementCategory.sportId}</Link> : ''}
                   </td>
                   <td className="text-right">
                     <div className="btn-group flex-btn-group-container">

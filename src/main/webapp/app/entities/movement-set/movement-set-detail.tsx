@@ -55,7 +55,7 @@ export class MovementSetDetail extends React.Component<IMovementSetDetailProps> 
             <dt>
               <Translate contentKey="coachappApp.movementSet.phase">Phase</Translate>
             </dt>
-            <dd>{movementSetEntity.phase ? movementSetEntity.phase.id : ''}</dd>
+            <dd>{movementSetEntity.phaseId ? movementSetEntity.phaseId : ''}</dd>
           </dl>
           <Button tag={Link} to="/entity/movement-set" replace color="info">
             <FontAwesomeIcon icon="arrow-left" />{' '}

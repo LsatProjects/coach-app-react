@@ -1,11 +1,10 @@
 package br.com.lsat.coachapp.web.rest;
 
 import com.codahale.metrics.annotation.Timed;
-import br.com.lsat.coachapp.domain.MovementSet;
-import br.com.lsat.coachapp.repository.MovementSetRepository;
-import br.com.lsat.coachapp.repository.search.MovementSetSearchRepository;
+import br.com.lsat.coachapp.service.MovementSetService;
 import br.com.lsat.coachapp.web.rest.errors.BadRequestAlertException;
 import br.com.lsat.coachapp.web.rest.util.HeaderUtil;
+import br.com.lsat.coachapp.service.dto.MovementSetDTO;
 import io.github.jhipster.web.util.ResponseUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +16,6 @@ import java.net.URISyntaxException;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import static org.elasticsearch.index.query.QueryBuilders.*;
@@ -33,31 +31,27 @@ public class MovementSetResource {
 
     private static final String ENTITY_NAME = "movementSet";
 
-    private final MovementSetRepository movementSetRepository;
+    private final MovementSetService movementSetService;
 
-    private final MovementSetSearchRepository movementSetSearchRepository;
-
-    public MovementSetResource(MovementSetRepository movementSetRepository, MovementSetSearchRepository movementSetSearchRepository) {
-        this.movementSetRepository = movementSetRepository;
-        this.movementSetSearchRepository = movementSetSearchRepository;
+    public MovementSetResource(MovementSetService movementSetService) {
+        this.movementSetService = movementSetService;
     }
 
     /**
      * POST  /movement-sets : Create a new movementSet.
      *
-     * @param movementSet the movementSet to create
-     * @return the ResponseEntity with status 201 (Created) and with body the new movementSet, or with status 400 (Bad Request) if the movementSet has already an ID
+     * @param movementSetDTO the movementSetDTO to create
+     * @return the ResponseEntity with status 201 (Created) and with body the new movementSetDTO, or with status 400 (Bad Request) if the movementSet has already an ID
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PostMapping("/movement-sets")
     @Timed
-    public ResponseEntity<MovementSet> createMovementSet(@RequestBody MovementSet movementSet) throws URISyntaxException {
-        log.debug("REST request to save MovementSet : {}", movementSet);
-        if (movementSet.getId() != null) {
+    public ResponseEntity<MovementSetDTO> createMovementSet(@RequestBody MovementSetDTO movementSetDTO) throws URISyntaxException {
+        log.debug("REST request to save MovementSet : {}", movementSetDTO);
+        if (movementSetDTO.getId() != null) {
             throw new BadRequestAlertException("A new movementSet cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        MovementSet result = movementSetRepository.save(movementSet);
-        movementSetSearchRepository.save(result);
+        MovementSetDTO result = movementSetService.save(movementSetDTO);
         return ResponseEntity.created(new URI("/api/movement-sets/" + result.getId()))
             .headers(HeaderUtil.createEntityCreationAlert(ENTITY_NAME, result.getId().toString()))
             .body(result);
@@ -66,23 +60,22 @@ public class MovementSetResource {
     /**
      * PUT  /movement-sets : Updates an existing movementSet.
      *
-     * @param movementSet the movementSet to update
-     * @return the ResponseEntity with status 200 (OK) and with body the updated movementSet,
-     * or with status 400 (Bad Request) if the movementSet is not valid,
-     * or with status 500 (Internal Server Error) if the movementSet couldn't be updated
+     * @param movementSetDTO the movementSetDTO to update
+     * @return the ResponseEntity with status 200 (OK) and with body the updated movementSetDTO,
+     * or with status 400 (Bad Request) if the movementSetDTO is not valid,
+     * or with status 500 (Internal Server Error) if the movementSetDTO couldn't be updated
      * @throws URISyntaxException if the Location URI syntax is incorrect
      */
     @PutMapping("/movement-sets")
     @Timed
-    public ResponseEntity<MovementSet> updateMovementSet(@RequestBody MovementSet movementSet) throws URISyntaxException {
-        log.debug("REST request to update MovementSet : {}", movementSet);
-        if (movementSet.getId() == null) {
+    public ResponseEntity<MovementSetDTO> updateMovementSet(@RequestBody MovementSetDTO movementSetDTO) throws URISyntaxException {
+        log.debug("REST request to update MovementSet : {}", movementSetDTO);
+        if (movementSetDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        MovementSet result = movementSetRepository.save(movementSet);
-        movementSetSearchRepository.save(result);
+        MovementSetDTO result = movementSetService.save(movementSetDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, movementSet.getId().toString()))
+            .headers(HeaderUtil.createEntityUpdateAlert(ENTITY_NAME, movementSetDTO.getId().toString()))
             .body(result);
     }
 
@@ -93,38 +86,36 @@ public class MovementSetResource {
      */
     @GetMapping("/movement-sets")
     @Timed
-    public List<MovementSet> getAllMovementSets() {
+    public List<MovementSetDTO> getAllMovementSets() {
         log.debug("REST request to get all MovementSets");
-        return movementSetRepository.findAll();
+        return movementSetService.findAll();
     }
 
     /**
      * GET  /movement-sets/:id : get the "id" movementSet.
      *
-     * @param id the id of the movementSet to retrieve
-     * @return the ResponseEntity with status 200 (OK) and with body the movementSet, or with status 404 (Not Found)
+     * @param id the id of the movementSetDTO to retrieve
+     * @return the ResponseEntity with status 200 (OK) and with body the movementSetDTO, or with status 404 (Not Found)
      */
     @GetMapping("/movement-sets/{id}")
     @Timed
-    public ResponseEntity<MovementSet> getMovementSet(@PathVariable Long id) {
+    public ResponseEntity<MovementSetDTO> getMovementSet(@PathVariable Long id) {
         log.debug("REST request to get MovementSet : {}", id);
-        Optional<MovementSet> movementSet = movementSetRepository.findById(id);
-        return ResponseUtil.wrapOrNotFound(movementSet);
+        Optional<MovementSetDTO> movementSetDTO = movementSetService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(movementSetDTO);
     }
 
     /**
      * DELETE  /movement-sets/:id : delete the "id" movementSet.
      *
-     * @param id the id of the movementSet to delete
+     * @param id the id of the movementSetDTO to delete
      * @return the ResponseEntity with status 200 (OK)
      */
     @DeleteMapping("/movement-sets/{id}")
     @Timed
     public ResponseEntity<Void> deleteMovementSet(@PathVariable Long id) {
         log.debug("REST request to delete MovementSet : {}", id);
-
-        movementSetRepository.deleteById(id);
-        movementSetSearchRepository.deleteById(id);
+        movementSetService.delete(id);
         return ResponseEntity.ok().headers(HeaderUtil.createEntityDeletionAlert(ENTITY_NAME, id.toString())).build();
     }
 
@@ -137,11 +128,9 @@ public class MovementSetResource {
      */
     @GetMapping("/_search/movement-sets")
     @Timed
-    public List<MovementSet> searchMovementSets(@RequestParam String query) {
+    public List<MovementSetDTO> searchMovementSets(@RequestParam String query) {
         log.debug("REST request to search MovementSets for query {}", query);
-        return StreamSupport
-            .stream(movementSetSearchRepository.search(queryStringQuery(query)).spliterator(), false)
-            .collect(Collectors.toList());
+        return movementSetService.search(query);
     }
 
 }

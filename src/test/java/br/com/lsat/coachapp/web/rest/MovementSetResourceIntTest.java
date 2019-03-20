@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.MovementSet;
 import br.com.lsat.coachapp.repository.MovementSetRepository;
 import br.com.lsat.coachapp.repository.search.MovementSetSearchRepository;
+import br.com.lsat.coachapp.service.MovementSetService;
+import br.com.lsat.coachapp.service.dto.MovementSetDTO;
+import br.com.lsat.coachapp.service.mapper.MovementSetMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -60,6 +63,12 @@ public class MovementSetResourceIntTest {
     @Autowired
     private MovementSetRepository movementSetRepository;
 
+    @Autowired
+    private MovementSetMapper movementSetMapper;
+
+    @Autowired
+    private MovementSetService movementSetService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -87,7 +96,7 @@ public class MovementSetResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final MovementSetResource movementSetResource = new MovementSetResource(movementSetRepository, mockMovementSetSearchRepository);
+        final MovementSetResource movementSetResource = new MovementSetResource(movementSetService);
         this.restMovementSetMockMvc = MockMvcBuilders.standaloneSetup(movementSetResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -121,9 +130,10 @@ public class MovementSetResourceIntTest {
         int databaseSizeBeforeCreate = movementSetRepository.findAll().size();
 
         // Create the MovementSet
+        MovementSetDTO movementSetDTO = movementSetMapper.toDto(movementSet);
         restMovementSetMockMvc.perform(post("/api/movement-sets")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementSet)))
+            .content(TestUtil.convertObjectToJsonBytes(movementSetDTO)))
             .andExpect(status().isCreated());
 
         // Validate the MovementSet in the database
@@ -146,11 +156,12 @@ public class MovementSetResourceIntTest {
 
         // Create the MovementSet with an existing ID
         movementSet.setId(1L);
+        MovementSetDTO movementSetDTO = movementSetMapper.toDto(movementSet);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restMovementSetMockMvc.perform(post("/api/movement-sets")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementSet)))
+            .content(TestUtil.convertObjectToJsonBytes(movementSetDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the MovementSet in the database
@@ -220,10 +231,11 @@ public class MovementSetResourceIntTest {
             .round(UPDATED_ROUND)
             .weight(UPDATED_WEIGHT)
             .level(UPDATED_LEVEL);
+        MovementSetDTO movementSetDTO = movementSetMapper.toDto(updatedMovementSet);
 
         restMovementSetMockMvc.perform(put("/api/movement-sets")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedMovementSet)))
+            .content(TestUtil.convertObjectToJsonBytes(movementSetDTO)))
             .andExpect(status().isOk());
 
         // Validate the MovementSet in the database
@@ -245,11 +257,12 @@ public class MovementSetResourceIntTest {
         int databaseSizeBeforeUpdate = movementSetRepository.findAll().size();
 
         // Create the MovementSet
+        MovementSetDTO movementSetDTO = movementSetMapper.toDto(movementSet);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restMovementSetMockMvc.perform(put("/api/movement-sets")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(movementSet)))
+            .content(TestUtil.convertObjectToJsonBytes(movementSetDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the MovementSet in the database
@@ -312,5 +325,28 @@ public class MovementSetResourceIntTest {
         assertThat(movementSet1).isNotEqualTo(movementSet2);
         movementSet1.setId(null);
         assertThat(movementSet1).isNotEqualTo(movementSet2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(MovementSetDTO.class);
+        MovementSetDTO movementSetDTO1 = new MovementSetDTO();
+        movementSetDTO1.setId(1L);
+        MovementSetDTO movementSetDTO2 = new MovementSetDTO();
+        assertThat(movementSetDTO1).isNotEqualTo(movementSetDTO2);
+        movementSetDTO2.setId(movementSetDTO1.getId());
+        assertThat(movementSetDTO1).isEqualTo(movementSetDTO2);
+        movementSetDTO2.setId(2L);
+        assertThat(movementSetDTO1).isNotEqualTo(movementSetDTO2);
+        movementSetDTO1.setId(null);
+        assertThat(movementSetDTO1).isNotEqualTo(movementSetDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(movementSetMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(movementSetMapper.fromId(null)).isNull();
     }
 }

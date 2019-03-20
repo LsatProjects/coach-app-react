@@ -5,6 +5,9 @@ import br.com.lsat.coachapp.CoachappApp;
 import br.com.lsat.coachapp.domain.Training;
 import br.com.lsat.coachapp.repository.TrainingRepository;
 import br.com.lsat.coachapp.repository.search.TrainingSearchRepository;
+import br.com.lsat.coachapp.service.TrainingService;
+import br.com.lsat.coachapp.service.dto.TrainingDTO;
+import br.com.lsat.coachapp.service.mapper.TrainingMapper;
 import br.com.lsat.coachapp.web.rest.errors.ExceptionTranslator;
 
 import org.junit.Before;
@@ -54,6 +57,12 @@ public class TrainingResourceIntTest {
     @Autowired
     private TrainingRepository trainingRepository;
 
+    @Autowired
+    private TrainingMapper trainingMapper;
+
+    @Autowired
+    private TrainingService trainingService;
+
     /**
      * This repository is mocked in the br.com.lsat.coachapp.repository.search test package.
      *
@@ -81,7 +90,7 @@ public class TrainingResourceIntTest {
     @Before
     public void setup() {
         MockitoAnnotations.initMocks(this);
-        final TrainingResource trainingResource = new TrainingResource(trainingRepository, mockTrainingSearchRepository);
+        final TrainingResource trainingResource = new TrainingResource(trainingService);
         this.restTrainingMockMvc = MockMvcBuilders.standaloneSetup(trainingResource)
             .setCustomArgumentResolvers(pageableArgumentResolver)
             .setControllerAdvice(exceptionTranslator)
@@ -113,9 +122,10 @@ public class TrainingResourceIntTest {
         int databaseSizeBeforeCreate = trainingRepository.findAll().size();
 
         // Create the Training
+        TrainingDTO trainingDTO = trainingMapper.toDto(training);
         restTrainingMockMvc.perform(post("/api/trainings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(training)))
+            .content(TestUtil.convertObjectToJsonBytes(trainingDTO)))
             .andExpect(status().isCreated());
 
         // Validate the Training in the database
@@ -136,11 +146,12 @@ public class TrainingResourceIntTest {
 
         // Create the Training with an existing ID
         training.setId(1L);
+        TrainingDTO trainingDTO = trainingMapper.toDto(training);
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restTrainingMockMvc.perform(post("/api/trainings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(training)))
+            .content(TestUtil.convertObjectToJsonBytes(trainingDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Training in the database
@@ -204,10 +215,11 @@ public class TrainingResourceIntTest {
         updatedTraining
             .name(UPDATED_NAME)
             .description(UPDATED_DESCRIPTION);
+        TrainingDTO trainingDTO = trainingMapper.toDto(updatedTraining);
 
         restTrainingMockMvc.perform(put("/api/trainings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(updatedTraining)))
+            .content(TestUtil.convertObjectToJsonBytes(trainingDTO)))
             .andExpect(status().isOk());
 
         // Validate the Training in the database
@@ -227,11 +239,12 @@ public class TrainingResourceIntTest {
         int databaseSizeBeforeUpdate = trainingRepository.findAll().size();
 
         // Create the Training
+        TrainingDTO trainingDTO = trainingMapper.toDto(training);
 
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restTrainingMockMvc.perform(put("/api/trainings")
             .contentType(TestUtil.APPLICATION_JSON_UTF8)
-            .content(TestUtil.convertObjectToJsonBytes(training)))
+            .content(TestUtil.convertObjectToJsonBytes(trainingDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Training in the database
@@ -292,5 +305,28 @@ public class TrainingResourceIntTest {
         assertThat(training1).isNotEqualTo(training2);
         training1.setId(null);
         assertThat(training1).isNotEqualTo(training2);
+    }
+
+    @Test
+    @Transactional
+    public void dtoEqualsVerifier() throws Exception {
+        TestUtil.equalsVerifier(TrainingDTO.class);
+        TrainingDTO trainingDTO1 = new TrainingDTO();
+        trainingDTO1.setId(1L);
+        TrainingDTO trainingDTO2 = new TrainingDTO();
+        assertThat(trainingDTO1).isNotEqualTo(trainingDTO2);
+        trainingDTO2.setId(trainingDTO1.getId());
+        assertThat(trainingDTO1).isEqualTo(trainingDTO2);
+        trainingDTO2.setId(2L);
+        assertThat(trainingDTO1).isNotEqualTo(trainingDTO2);
+        trainingDTO1.setId(null);
+        assertThat(trainingDTO1).isNotEqualTo(trainingDTO2);
+    }
+
+    @Test
+    @Transactional
+    public void testEntityFromId() {
+        assertThat(trainingMapper.fromId(42L).getId()).isEqualTo(42);
+        assertThat(trainingMapper.fromId(null)).isNull();
     }
 }

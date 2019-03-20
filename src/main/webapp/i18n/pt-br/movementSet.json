@@ -20,8 +20,8 @@
       "round": "Round",
       "weight": "Weight",
       "level": "Level",
-      "phase": "Phase",
-      "movements": "Movements"
+      "movements": "Movements",
+      "phase": "Phase"
     }
   }
 }

@@ -29,17 +29,17 @@
             "otherEntityField": "id"
         },
         {
+            "relationshipType": "many-to-one",
             "relationshipName": "movementSet",
             "otherEntityName": "movementSet",
-            "relationshipType": "many-to-one",
             "otherEntityField": "id"
         }
     ],
     "changelogDate": "20190317140634",
     "entityTableName": "movement",
-    "dto": "no",
+    "dto": "mapstruct",
     "pagination": "pager",
-    "service": "no",
+    "service": "serviceClass",
     "jpaMetamodelFiltering": false,
     "fluentMethods": true,
     "clientRootFolder": "",
